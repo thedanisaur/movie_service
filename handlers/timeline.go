@@ -18,7 +18,18 @@ func GetTimeline(c *fiber.Ctx) error {
 	log.Printf("%s | %s\n", util.GetFunctionName(GetTimeline), txid.String())
 	err_string := fmt.Sprintf("Database Error: %s\n", txid.String())
 	database := db.GetInstance()
-	series_rating_rows, err := database.Query("SELECT series_name, series_order, series_title, series_created_on, good_votes, bad_votes, rating, chosen_by FROM rating_vw r_vw")
+	rating_vw_query := `
+		SELECT series_name
+			, series_order
+			, series_title
+			, series_created_on
+			, good_votes
+			, bad_votes
+			, rating
+			, chosen_by
+		FROM rating_vw
+	`
+	series_rating_rows, err := database.Query(rating_vw_query)
 	if err != nil {
 		log.Printf("Failed to query rating_vw:\n%s\n", err.Error())
 		return c.Status(fiber.StatusServiceUnavailable).SendString(err_string)
@@ -49,7 +60,14 @@ func GetTimeline(c *fiber.Ctx) error {
 	}
 
 	// Get all the movies
-	movie_votes_rows, err := database.Query("SELECT series_name, movie_title, dan_vote, nick_vote FROM dn_movies_votes_vw")
+	movies_votes_query := `
+		SELECT series_name
+			, movie_title
+			, dan_vote
+			, nick_vote
+		FROM dn_movies_votes_vw
+	`
+	movie_votes_rows, err := database.Query(movies_votes_query)
 	if err != nil {
 		log.Printf("Failed to query dn_movies_votes_vw:\n%s\n", err.Error())
 		return c.Status(fiber.StatusServiceUnavailable).SendString(err_string)

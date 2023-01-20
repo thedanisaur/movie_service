@@ -17,7 +17,17 @@ func GetRating(c *fiber.Ctx) error {
 	log.Printf("%s | %s\n", util.GetFunctionName(GetRating), txid.String())
 	err_string := fmt.Sprintf("Database Error: %s\n", txid.String())
 	database := db.GetInstance()
-	rows, err := database.Query("SELECT series_title, chosen_by, movies_in_series, good_votes, bad_votes, total_votes, rating FROM rating_vw")
+	ratings_query := `
+		SELECT series_title
+			, chosen_by
+			, movies_in_series
+			, good_votes
+			, bad_votes
+			, total_votes
+			, rating
+		FROM rating_vw
+	`
+	rows, err := database.Query(ratings_query)
 	if err != nil {
 		log.Printf("Failed to query rating_vw:\n%s\n", err.Error())
 		return c.Status(fiber.StatusServiceUnavailable).SendString(err_string)

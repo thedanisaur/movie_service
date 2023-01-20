@@ -17,7 +17,16 @@ func GetTrackers(c *fiber.Ctx) error {
 	log.Printf("%s | %s\n", util.GetFunctionName(GetTrackers), txid.String())
 	err_string := fmt.Sprintf("Database Error: %s\n", txid.String())
 	database := db.GetInstance()
-	rows, err := database.Query("SELECT tracker_id, tracker_text, tracker_count, tracker_created_on, tracker_updated_on, tracker_created_by FROM trackers_vw")
+	query := `
+		SELECT tracker_id
+			, tracker_text
+			, tracker_count
+			, tracker_created_on
+			, tracker_updated_on
+			, tracker_created_by
+		FROM trackers_vw
+	`
+	rows, err := database.Query(query)
 	if err != nil {
 		log.Printf("Failed to query trackers_vw:\n%s\n", err.Error())
 		return c.Status(fiber.StatusServiceUnavailable).SendString(err_string)
@@ -49,4 +58,46 @@ func GetTrackers(c *fiber.Ctx) error {
 	}
 
 	return c.Status(fiber.StatusOK).JSON(trackers)
+}
+
+func PostTrackers(c *fiber.Ctx) error {
+	txid := uuid.New()
+	log.Printf("%s | %s\n", util.GetFunctionName(PostTrackers), txid.String())
+	var tracker types.Tracker
+	err := c.BodyParser(&tracker)
+	if err != nil {
+		log.Printf("Failed to parse tracker data\n%s\n", err.Error())
+		return c.Status(fiber.StatusBadRequest).SendString(fmt.Sprintf("Failed to parse tracker data: %s\n", txid.String()))
+	}
+	err_string := fmt.Sprintf("Database Error: %s\n", txid.String())
+	database := db.GetInstance()
+	query := `
+		INSERT INTO trackers
+		(
+			tracker_id
+			, tracker_text
+			, tracker_created_on
+			, tracker_updated_on
+			, person_id
+		)
+		SELECT  UUID_TO_BIN(UUID())
+				, ?
+				, CURDATE()
+				, CURDATE()
+				, person_id
+		FROM people
+		WHERE person_username = LOWER(?);
+	`
+	result, err := database.Exec(query, tracker.Text, tracker.CreatedBy)
+	if err != nil {
+		log.Printf("Failed to insert record into trackers:\n%s\n", err.Error())
+		return c.Status(fiber.StatusServiceUnavailable).SendString(err_string)
+	}
+	id, err := result.LastInsertId()
+	if err != nil {
+		log.Printf("Failed retreive inserted id\n%s\n", err.Error())
+		return c.Status(fiber.StatusServiceUnavailable).SendString(err_string)
+	}
+
+	return c.Status(fiber.StatusOK).JSON(id)
 }

@@ -26,6 +26,7 @@ func main() {
 	app.Get("/ratings", handlers.GetTrackers)
 
 	// JWT Authentication routes
+	app.Post("/trackers", handlers.PostTrackers)
 
 	app.Listen(":1234")
 }
