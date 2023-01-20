@@ -1,50 +1,26 @@
 package handlers
 
 import (
-	"encoding/json"
 	"fmt"
+	"log"
 	"movie_service/db"
 	"movie_service/types"
-	"net/http"
+	"movie_service/util"
 
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
 )
 
-func TrackerRoute() string {
-	return "/trackers"
-}
-
-func TrackerHandler(writer http.ResponseWriter, request *http.Request) {
-	writer.Header().Set("Access-Control-Allow-Origin", "*")
-	writer.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+func GetTrackers(c *fiber.Ctx) error {
 	txid := uuid.New()
-	fmt.Printf("TrackerHandler | %s\n", txid.String())
-	switch request.Method {
-	case "GET":
-		result := trackerGet()
-		if result == nil {
-			msg := fmt.Sprintf("%s %s failed: %s", request.Method, TrackerRoute(), txid.String())
-			err := types.Error{Msg: msg}
-			json.NewEncoder(writer).Encode(err)
-		} else {
-			json.NewEncoder(writer).Encode(result)
-		}
-	default:
-		msg := fmt.Sprintf("%s %s unavailable: %s", request.Method, TrackerRoute(), txid.String())
-		result := types.Error{Msg: msg}
-		json.NewEncoder(writer).Encode(result)
-	}
-}
-
-func trackerGet() []types.Tracker {
-	fmt.Println("trackerGet")
+	log.Printf("%s | %s\n", util.GetFunctionName(GetTrackers), txid.String())
+	err_string := fmt.Sprintf("Database Error: %s\n", txid.String())
 	database := db.GetInstance()
-	// Execute the query
 	rows, err := database.Query("SELECT tracker_id, tracker_text, tracker_count, tracker_created_on, tracker_updated_on, tracker_created_by FROM trackers_vw")
 	if err != nil {
-		fmt.Printf("Failed to query databse\n%s\n", err.Error())
-		return nil
+		log.Printf("Failed to query trackers_vw:\n%s\n", err.Error())
+		return c.Status(fiber.StatusServiceUnavailable).SendString(err_string)
 	}
 
 	var trackers []types.Tracker
@@ -58,8 +34,8 @@ func trackerGet() []types.Tracker {
 			&tracker.UpdatedOn,
 			&tracker.CreatedBy)
 		if err != nil {
-			fmt.Printf("Failed to scan row\n%s\n", err.Error())
-			return nil
+			log.Printf("Failed to scan row:\n%s\n", err.Error())
+			return c.Status(fiber.StatusServiceUnavailable).SendString(err_string)
 		}
 		tracker.Rank = i
 		trackers = append(trackers, tracker)
@@ -68,9 +44,9 @@ func trackerGet() []types.Tracker {
 
 	err = rows.Err()
 	if err != nil {
-		fmt.Printf("Failed after row scan\n%s\n", err.Error())
-		return nil
+		log.Printf("Failed after row scan:\n%s\n", err.Error())
+		return c.Status(fiber.StatusServiceUnavailable).SendString(err_string)
 	}
 
-	return trackers
+	return c.Status(fiber.StatusOK).JSON(trackers)
 }

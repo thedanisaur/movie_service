@@ -1,51 +1,27 @@
 package handlers
 
 import (
-	"encoding/json"
 	"fmt"
+	"log"
 	"movie_service/db"
 	"movie_service/types"
-	"net/http"
+	"movie_service/util"
 	"sort"
 
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
 )
 
-func TimelineRoute() string {
-	return "/timeline"
-}
-
-func TimelineHandler(writer http.ResponseWriter, request *http.Request) {
-	writer.Header().Set("Access-Control-Allow-Origin", "*")
-	writer.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+func GetTimeline(c *fiber.Ctx) error {
 	txid := uuid.New()
-	fmt.Printf("TimelineHandler | %s\n", txid.String())
-	switch request.Method {
-	case "GET":
-		result := timelineGet()
-		if result == nil {
-			msg := fmt.Sprintf("%s %s failed: %s", request.Method, TimelineRoute(), txid.String())
-			err := types.Error{Msg: msg}
-			json.NewEncoder(writer).Encode(err)
-		} else {
-			json.NewEncoder(writer).Encode(result)
-		}
-	default:
-		msg := fmt.Sprintf("%s %s unavailable: %s", request.Method, TimelineRoute(), txid.String())
-		result := types.Error{Msg: msg}
-		json.NewEncoder(writer).Encode(result)
-	}
-}
-
-func timelineGet() []types.Timeline {
-	fmt.Println("timelineGet")
+	log.Printf("%s | %s\n", util.GetFunctionName(GetTimeline), txid.String())
+	err_string := fmt.Sprintf("Database Error: %s\n", txid.String())
 	database := db.GetInstance()
-	// Execute the query
 	series_rating_rows, err := database.Query("SELECT series_name, series_order, series_title, series_created_on, good_votes, bad_votes, rating, chosen_by FROM rating_vw r_vw")
 	if err != nil {
-		fmt.Printf("Failed to query rating_vw\n%s\n", err.Error())
-		return nil
+		log.Printf("Failed to query rating_vw:\n%s\n", err.Error())
+		return c.Status(fiber.StatusServiceUnavailable).SendString(err_string)
 	}
 
 	var series_rating []types.SeriesRating
@@ -60,23 +36,23 @@ func timelineGet() []types.Timeline {
 			&rating.SeriesRating,
 			&rating.SeriesChosenBy)
 		if err != nil {
-			fmt.Printf("Failed to scan series_rating_rows\n%s\n", err.Error())
-			return nil
+			log.Printf("Failed to scan series_rating_rows:\n%s\n", err.Error())
+			return c.Status(fiber.StatusServiceUnavailable).SendString(err_string)
 		}
 		series_rating = append(series_rating, rating)
 	}
 
 	err = series_rating_rows.Err()
 	if err != nil {
-		fmt.Printf("Failed after series_rating_rows scan\n%s\n", err.Error())
-		return nil
+		log.Printf("Failed after series_rating_rows scan:\n%s\n", err.Error())
+		return c.Status(fiber.StatusServiceUnavailable).SendString(err_string)
 	}
 
 	// Get all the movies
 	movie_votes_rows, err := database.Query("SELECT series_name, movie_title, dan_vote, nick_vote FROM dn_movies_votes_vw")
 	if err != nil {
-		fmt.Printf("Failed to query dn_movies_votes_vw\n%s\n", err.Error())
-		return nil
+		log.Printf("Failed to query dn_movies_votes_vw:\n%s\n", err.Error())
+		return c.Status(fiber.StatusServiceUnavailable).SendString(err_string)
 	}
 
 	var movies []types.Movie
@@ -87,16 +63,16 @@ func timelineGet() []types.Timeline {
 			&movie.DanVote,
 			&movie.NickVote)
 		if err != nil {
-			fmt.Printf("Failed to scan movie_votes_rows\n%s\n", err.Error())
-			return nil
+			log.Printf("Failed to scan movie_votes_rows:\n%s\n", err.Error())
+			return c.Status(fiber.StatusServiceUnavailable).SendString(err_string)
 		}
 		movies = append(movies, movie)
 	}
 
 	err = movie_votes_rows.Err()
 	if err != nil {
-		fmt.Printf("Failed after movie_votes_rows scan\n%s\n", err.Error())
-		return nil
+		log.Printf("Failed after movie_votes_rows scan:\n%s\n", err.Error())
+		return c.Status(fiber.StatusServiceUnavailable).SendString(err_string)
 	}
 
 	var timeline []types.Timeline
@@ -123,5 +99,5 @@ func timelineGet() []types.Timeline {
 		return timeline[i].SeriesOrder > timeline[j].SeriesOrder
 	})
 
-	return timeline
+	return c.Status(fiber.StatusOK).JSON(timeline)
 }
