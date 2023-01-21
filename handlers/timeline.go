@@ -101,6 +101,9 @@ func GetTimeline(c *fiber.Ctx) error {
 				series_movies = append(series_movies, movies[j])
 			}
 		}
+		if series_movies == nil {
+			series_movies = make([]types.Movie, 0)
+		}
 		timeline = append(timeline, types.Timeline{
 			SeriesOrder:     series_rating[i].SeriesOrder,
 			SeriesTitle:     series_rating[i].SeriesTitle,

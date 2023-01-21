@@ -27,6 +27,7 @@ func main() {
 
 	// JWT Authentication routes
 	app.Post("/trackers", handlers.PostTrackers)
+	app.Post("/series", handlers.PostSeries)
 
 	app.Listen(":1234")
 }

@@ -67,7 +67,7 @@ func PostTrackers(c *fiber.Ctx) error {
 	err := c.BodyParser(&tracker)
 	if err != nil {
 		log.Printf("Failed to parse tracker data\n%s\n", err.Error())
-		return c.Status(fiber.StatusBadRequest).SendString(fmt.Sprintf("Failed to parse tracker data: %s\n", txid.String()))
+		return c.Status(fiber.StatusBadRequest).SendString(fmt.Sprintf("Bad Request: %s\n", txid.String()))
 	}
 	err_string := fmt.Sprintf("Database Error: %s\n", txid.String())
 	database := db.GetInstance()
@@ -95,7 +95,7 @@ func PostTrackers(c *fiber.Ctx) error {
 	}
 	id, err := result.LastInsertId()
 	if err != nil {
-		log.Printf("Failed retreive inserted id\n%s\n", err.Error())
+		log.Printf("Failed retrieve inserted id\n%s\n", err.Error())
 		return c.Status(fiber.StatusServiceUnavailable).SendString(err_string)
 	}
 
