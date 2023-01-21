@@ -73,9 +73,9 @@ func GetTimeline(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusServiceUnavailable).SendString(err_string)
 	}
 
-	var movies []types.Movie
+	var movies []types.TimelineMovie
 	for movie_votes_rows.Next() {
-		var movie types.Movie
+		var movie types.TimelineMovie
 		err = movie_votes_rows.Scan(&movie.SeriesName,
 			&movie.MovieTitle,
 			&movie.DanVote,
@@ -95,14 +95,14 @@ func GetTimeline(c *fiber.Ctx) error {
 
 	var timeline []types.Timeline
 	for i := 0; i < len(series_rating); i++ {
-		var series_movies []types.Movie
+		var series_movies []types.TimelineMovie
 		for j := 0; j < len(movies); j++ {
 			if movies[j].SeriesName == series_rating[i].SeriesName {
 				series_movies = append(series_movies, movies[j])
 			}
 		}
 		if series_movies == nil {
-			series_movies = make([]types.Movie, 0)
+			series_movies = make([]types.TimelineMovie, 0)
 		}
 		timeline = append(timeline, types.Timeline{
 			SeriesOrder:     series_rating[i].SeriesOrder,

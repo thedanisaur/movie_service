@@ -6,19 +6,11 @@ import (
 	"movie_service/db"
 	"movie_service/types"
 	"movie_service/util"
-	"regexp"
-	"strings"
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
 )
-
-func formatSeriesName(title string) string {
-	name := regexp.MustCompile(`[^a-zA-Z0-9 ]+`).ReplaceAllString(title, "")
-	name = strings.ReplaceAll(name, " ", "_")
-	return strings.ToLower(name)
-}
 
 func PostSeries(c *fiber.Ctx) error {
 	txid := uuid.New()
@@ -29,7 +21,7 @@ func PostSeries(c *fiber.Ctx) error {
 		log.Printf("Failed to parse series data\n%s\n", err.Error())
 		return c.Status(fiber.StatusBadRequest).SendString(fmt.Sprintf("Bad Request: %s\n", txid.String()))
 	}
-	series.Name = formatSeriesName(series.Title)
+	series.Name = util.FormatName(series.Title)
 	database := db.GetInstance()
 	query := `
 		INSERT INTO series
