@@ -23,7 +23,8 @@ func main() {
 	// Non Authenticated routes
 	app.Get("/timeline", handlers.GetTimeline)
 	app.Get("/trackers", handlers.GetTrackers)
-	app.Get("/ratings", handlers.GetTrackers)
+	app.Get("/ratings", handlers.GetRatings)
+	app.Get("/movies", handlers.GetMovies)
 
 	// JWT Authentication routes
 	app.Post("/trackers", handlers.PostTrackers)

@@ -12,9 +12,9 @@ import (
 	"github.com/google/uuid"
 )
 
-func GetRating(c *fiber.Ctx) error {
+func GetRatings(c *fiber.Ctx) error {
 	txid := uuid.New()
-	log.Printf("%s | %s\n", util.GetFunctionName(GetRating), txid.String())
+	log.Printf("%s | %s\n", util.GetFunctionName(GetRatings), txid.String())
 	err_string := fmt.Sprintf("Database Error: %s\n", txid.String())
 	database := db.GetInstance()
 	ratings_query := `
