@@ -45,10 +45,18 @@ func PostSeries(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusServiceUnavailable).SendString(err_string)
 	}
 	id, err := result.LastInsertId()
-	if err != nil {
+	// TODO || id == 0 is there because no error was being thrown
+	// for not including a username, suspicious
+	// This fix probably only works because of the auto increment
+	if err != nil || id == 0 {
 		log.Printf("Failed retrieve inserted id\n%s\n", err.Error())
 		return c.Status(fiber.StatusServiceUnavailable).SendString(err_string)
 	}
 
-	return c.Status(fiber.StatusOK).JSON(id)
+	json := &fiber.Map{
+		"id":          id,
+		"series_name": series.Name,
+	}
+
+	return c.Status(fiber.StatusOK).JSON(json)
 }
