@@ -24,9 +24,10 @@ type SeriesRating struct {
 }
 
 type TimelineMovie struct {
-	SeriesName string `json:"series_name"`
-	MovieName  string `json:"movie_name"`
-	MovieTitle string `json:"movie_title"`
-	DanVote    string `json:"dan_vote"`
-	NickVote   string `json:"nick_vote"`
+	SeriesName  string `json:"series_name"`
+	SeriesTitle string `json:"series_title"`
+	MovieName   string `json:"movie_name"`
+	MovieTitle  string `json:"movie_title"`
+	DanVote     string `json:"dan_vote"`
+	NickVote    string `json:"nick_vote"`
 }
