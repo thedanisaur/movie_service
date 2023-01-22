@@ -24,6 +24,7 @@ func GetMovies(c *fiber.Ctx) error {
 			, series_title
 			, movie_name
 			, movie_title
+			, movie_created_on
 			, dan_vote
 			, nick_vote
 		FROM dn_movies_votes_vw
@@ -41,6 +42,7 @@ func GetMovies(c *fiber.Ctx) error {
 			&movie.SeriesTitle,
 			&movie.MovieName,
 			&movie.MovieTitle,
+			&movie.MovieCreatedOn,
 			&movie.DanVote,
 			&movie.NickVote)
 		if err != nil {
