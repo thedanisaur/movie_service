@@ -99,5 +99,9 @@ func PostTrackers(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusServiceUnavailable).SendString(err_string)
 	}
 
-	return c.Status(fiber.StatusOK).JSON(id)
+	json := &fiber.Map{
+		"id": id,
+	}
+
+	return c.Status(fiber.StatusOK).JSON(json)
 }

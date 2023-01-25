@@ -17,19 +17,20 @@ func main() {
 	// Add CORS
 	app.Use(cors.New(cors.Config{
 		AllowOrigins: "*",
-		AllowHeaders: "Origin, Content-Type, Accept",
+		AllowHeaders: "Origin, Content-Type, Accept, Authorization",
 	}))
 
 	// Non Authenticated routes
+	app.Get("/movies", handlers.GetMovies)
+	app.Get("/ratings", handlers.GetRatings)
+	app.Get("/series", handlers.GetSeries)
 	app.Get("/timeline", handlers.GetTimeline)
 	app.Get("/trackers", handlers.GetTrackers)
-	app.Get("/ratings", handlers.GetRatings)
-	app.Get("/movies", handlers.GetMovies)
 
 	// JWT Authentication routes
-	app.Post("/trackers", handlers.PostTrackers)
-	app.Post("/series", handlers.PostSeries)
 	app.Post("/movies/:series", handlers.PostMovie)
+	app.Post("/series", handlers.PostSeries)
+	app.Post("/trackers", handlers.PostTrackers)
 
 	app.Listen(":1234")
 }
