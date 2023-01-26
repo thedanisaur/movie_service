@@ -61,6 +61,7 @@ func GetMovies(c *fiber.Ctx) error {
 	// Get top 3 trackers
 	movie_trackers_query := `
 		SELECT mt.movie_name
+			, BIN_TO_UUID(t.tracker_id) tracker_id
 			, t.tracker_text
 			, mt.tracker_count
 		FROM movie_trackers mt
@@ -79,6 +80,7 @@ func GetMovies(c *fiber.Ctx) error {
 	for movie_trackers_rows.Next() {
 		var movie_tracker types.MovieTracker
 		err = movie_trackers_rows.Scan(&movie_tracker.MovieName,
+			&movie_tracker.TrackerID,
 			&movie_tracker.TrackerText,
 			&movie_tracker.TrackerCount)
 		if err != nil {

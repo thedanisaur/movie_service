@@ -2,6 +2,7 @@ package types
 
 type MovieTracker struct {
 	MovieName    string `json:"movie_name"`
+	TrackerID    []byte `json:"tracker_id"`
 	TrackerText  string `json:"tracker_text"`
 	TrackerCount int    `json:"tracker_count"`
 }
