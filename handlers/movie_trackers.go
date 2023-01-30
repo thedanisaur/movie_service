@@ -62,9 +62,6 @@ func PostMovieTrackers(c *fiber.Ctx) error {
 		log.Printf("Failed to parse movie data\n%s\n", err.Error())
 		return c.Status(fiber.StatusBadRequest).SendString(fmt.Sprintf("Bad Request: %s\n", txid.String()))
 	}
-	log.Printf("Username: %s\n", username)
-	log.Printf("Movie Trackers: \n%v\n", movie_trackers)
-
 	inserts := 0
 	updates := 0
 	for i := 0; i < len(movie_trackers); i++ {
@@ -84,7 +81,6 @@ func PostMovieTrackers(c *fiber.Ctx) error {
 			err_string := fmt.Sprintf("Database Error: %s\n", txid.String())
 			return c.Status(fiber.StatusServiceUnavailable).SendString(err_string)
 		}
-		log.Printf("Value: %v\n", val)
 		// Update!
 		if val != 0 {
 			query := `
