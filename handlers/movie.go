@@ -60,15 +60,17 @@ func GetMovies(c *fiber.Ctx) error {
 
 	// Get top 3 trackers
 	movie_trackers_query := `
-		SELECT mt.movie_name
+		SELECT  mt.movie_name
 			, BIN_TO_UUID(t.tracker_id) tracker_id
 			, t.tracker_text
-			, mt.tracker_count
-		FROM movie_trackers mt
+			, SUM(IFNULL(mt.tracker_count, 0)) tracker_count
+		FROM    movie_trackers mt
 			, trackers t
-		WHERE mt.tracker_id = t.tracker_id
-		ORDER BY mt.movie_name
-			, mt.tracker_count DESC
+		WHERE   mt.tracker_id = t.tracker_id
+		GROUP BY t.tracker_id
+			, mt.movie_name
+		ORDER BY  mt.movie_name
+			, tracker_count DESC
 	`
 	movie_trackers_rows, err := database.Query(movie_trackers_query)
 	if err != nil {
