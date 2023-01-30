@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"movie_service/db"
@@ -51,39 +52,97 @@ func GetMovieTrackers(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(movie_trackers)
 }
 
-// func PostMovieTrackers(c *fiber.Ctx) error {
-// 	txid := uuid.New()
-// 	log.Printf("%s | %s\n", util.GetFunctionName(PostMovie), txid.String())
-// 	series_name := c.Params("series")
-// 	var movies []types.Movie
-// 	err := json.Unmarshal(c.Body(), &movies)
-// 	if err != nil {
-// 		log.Printf("Failed to parse movie data\n%s\n", err.Error())
-// 		return c.Status(fiber.StatusBadRequest).SendString(fmt.Sprintf("Bad Request: %s\n", txid.String()))
-// 	}
-// 	query := `INSERT INTO movies (movie_name, series_name, movie_title, movie_created_on) VALUES `
-// 	values := []interface{}{}
-// 	for _, movie := range movies {
-// 		query += `(?, ?, ?, CURDATE()), `
-// 		values = append(values, util.FormatName(movie.Title), series_name, movie.Title)
-// 	}
-// 	query = query[0 : len(query)-2]
-// 	err_string := fmt.Sprintf("Database Error: %s\n", txid.String())
-// 	database := db.GetInstance()
-// 	result, err := database.Exec(query, values...)
-// 	if err != nil {
-// 		log.Printf("Failed to insert record into movies:\n%s\n", err.Error())
-// 		return c.Status(fiber.StatusServiceUnavailable).SendString(err_string)
-// 	}
-// 	id, err := result.LastInsertId()
-// 	if err != nil {
-// 		log.Printf("Failed retrieve inserted id\n%s\n", err.Error())
-// 		return c.Status(fiber.StatusServiceUnavailable).SendString(err_string)
-// 	}
+func PostMovieTrackers(c *fiber.Ctx) error {
+	txid := uuid.New()
+	log.Printf("%s | %s\n", util.GetFunctionName(PostMovieTrackers), txid.String())
+	username := c.Params("username")
+	var movie_trackers []types.MovieTracker
+	err := json.Unmarshal(c.Body(), &movie_trackers)
+	if err != nil {
+		log.Printf("Failed to parse movie data\n%s\n", err.Error())
+		return c.Status(fiber.StatusBadRequest).SendString(fmt.Sprintf("Bad Request: %s\n", txid.String()))
+	}
+	log.Printf("Username: %s\n", username)
+	log.Printf("Movie Trackers: \n%v\n", movie_trackers)
 
-// 	json := &fiber.Map{
-// 		"id": id,
-// 	}
+	inserts := 0
+	updates := 0
+	for i := 0; i < len(movie_trackers); i++ {
+		movie_tracker := movie_trackers[i]
+		query := `
+			SELECT COUNT(*)
+			FROM movie_trackers
+			WHERE tracker_id = UUID_TO_BIN(?)
+			AND movie_name = ?
+		`
+		database := db.GetInstance()
+		row := database.QueryRow(query, movie_tracker.TrackerID, movie_tracker.MovieName)
+		var val int
+		err = row.Scan(&val)
+		if err != nil {
+			log.Printf("Database Error:\n%s\n", err.Error())
+			err_string := fmt.Sprintf("Database Error: %s\n", txid.String())
+			return c.Status(fiber.StatusServiceUnavailable).SendString(err_string)
+		}
+		log.Printf("Value: %v\n", val)
+		// Update!
+		if val != 0 {
+			query := `
+                UPDATE movie_trackers
+                INNER JOIN people ON movie_trackers.movie_tracker_created_by = people.person_id
+                SET movie_trackers.tracker_count = ?
+                WHERE movie_trackers.movie_name = ?
+                AND movie_trackers.tracker_id = UUID_TO_BIN(?)
+                AND movie_trackers.movie_tracker_created_by = people.person_id
+                AND people.person_username = ?
+            `
+			result, err := database.Exec(query, &movie_tracker.TrackerCount, &movie_tracker.MovieName, &movie_tracker.TrackerID, username)
+			err_string := fmt.Sprintf("Database Error: %s\n", txid.String())
+			if err != nil {
+				log.Printf("Failed to update record in movie_trackers:\n%s\n", err.Error())
+				return c.Status(fiber.StatusServiceUnavailable).SendString(err_string)
+			}
+			_, err = result.LastInsertId()
+			if err != nil {
+				log.Printf("Failed retrieve inserted id\n%s\n", err.Error())
+				return c.Status(fiber.StatusServiceUnavailable).SendString(err_string)
+			}
 
-// 	return c.Status(fiber.StatusOK).JSON(json)
-// }
+		} else {
+			// Insert
+			query := `
+                INSERT INTO movie_trackers (
+                    movie_name
+                    , tracker_id
+                    , tracker_count
+                    , movie_tracker_created_by
+                )
+                SELECT ?
+                    , UUID_TO_BIN(?)
+                    , ?
+                    , p.person_id
+                FROM people p
+                WHERE p.person_username = ?
+            `
+			result, err := database.Exec(query, &movie_tracker.MovieName, &movie_tracker.TrackerID, &movie_tracker.TrackerCount, username)
+			err_string := fmt.Sprintf("Database Error: %s\n", txid.String())
+			if err != nil {
+				log.Printf("Failed to insert record into movie_trackers:\n%s\n", err.Error())
+				return c.Status(fiber.StatusServiceUnavailable).SendString(err_string)
+			}
+			_, err = result.LastInsertId()
+			if err != nil {
+				log.Printf("Failed retrieve inserted id\n%s\n", err.Error())
+				return c.Status(fiber.StatusServiceUnavailable).SendString(err_string)
+			}
+		}
+	}
+
+	json := &fiber.Map{
+		"id":      txid.String(),
+		"inserts": inserts,
+		"updates": updates,
+	}
+
+	return c.Status(fiber.StatusOK).JSON(json)
+}

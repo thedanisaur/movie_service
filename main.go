@@ -30,8 +30,10 @@ func main() {
 
 	// JWT Authentication routes
 	app.Post("/movies/:series", handlers.PostMovie)
+	app.Post("/movie_trackers/:username", handlers.PostMovieTrackers)
 	app.Post("/series", handlers.PostSeries)
 	app.Post("/trackers", handlers.PostTrackers)
+	app.Post("/vote", handlers.PostVote)
 
 	app.Listen(":1234")
 }
