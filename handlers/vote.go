@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"movie_service/db"
+	"movie_service/security"
 	"movie_service/types"
 	"movie_service/util"
 	"strconv"
@@ -17,6 +18,9 @@ import (
 func PostVote(c *fiber.Ctx) error {
 	txid := uuid.New()
 	log.Printf("%s | %s\n", util.GetFunctionName(PostVote), txid.String())
+	if security.ValidateJWT(c) != nil {
+		return c.Status(fiber.StatusUnauthorized).SendString(fmt.Sprintf("Unauthorized: %s\n", txid.String()))
+	}
 	var vote_data types.Vote
 	err := json.Unmarshal(c.Body(), &vote_data)
 	if err != nil {
