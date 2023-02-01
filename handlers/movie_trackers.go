@@ -53,6 +53,44 @@ func GetMovieTrackers(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(movie_trackers)
 }
 
+func GetMovieTrackersByID(c *fiber.Ctx) error {
+	txid := uuid.New()
+	log.Printf("%s | %s\n", util.GetFunctionName(GetMovieTrackersByID), txid.String())
+	tracker_id := c.Params("tracker_id")
+	// Don't worry about converting the uuid back,
+	// the mt_vw already has tracker_id in uuid format
+	tracker_movies_query := `
+        SELECT m.movie_title
+            , mt_vw.tracker_count
+        FROM movie_trackers_vw mt_vw
+            , movies m
+        WHERE mt_vw.movie_name = m.movie_name
+        AND mt_vw.tracker_id = ?
+        ORDER BY mt_vw.tracker_count DESC
+	`
+	err_string := fmt.Sprintf("Database Error: %s\n", txid.String())
+	database := db.GetInstance()
+	tracker_movies_rows, err := database.Query(tracker_movies_query, tracker_id)
+	if err != nil {
+		log.Printf("Failed to query for tracker's movies:\n%s\n", err.Error())
+		return c.Status(fiber.StatusServiceUnavailable).SendString(err_string)
+	}
+
+	var tracker_movies []types.MovieTracker2
+	for tracker_movies_rows.Next() {
+		var tracker_movie types.MovieTracker2
+		err = tracker_movies_rows.Scan(&tracker_movie.MovieTitle,
+			&tracker_movie.TrackerCount)
+		if err != nil {
+			log.Printf("Failed to scan tracker_movies_rows:\n%s\n", err.Error())
+			return c.Status(fiber.StatusServiceUnavailable).SendString(err_string)
+		}
+		tracker_movies = append(tracker_movies, tracker_movie)
+	}
+
+	return c.Status(fiber.StatusOK).JSON(tracker_movies)
+}
+
 func PostMovieTrackers(c *fiber.Ctx) error {
 	txid := uuid.New()
 	log.Printf("%s | %s\n", util.GetFunctionName(PostMovieTrackers), txid.String())

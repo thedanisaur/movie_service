@@ -1,16 +1,23 @@
 package types
 
+import "github.com/google/uuid"
+
 type MovieTracker struct {
-	MovieName    string `json:"movie_name"`
-	TrackerID    []byte `json:"tracker_id"`
-	TrackerText  string `json:"tracker_text"`
+	MovieName    string    `json:"movie_name"`
+	TrackerID    uuid.UUID `json:"tracker_id"`
+	TrackerText  string    `json:"tracker_text"`
+	TrackerCount int       `json:"tracker_count"`
+}
+
+type MovieTracker2 struct {
+	MovieTitle   string `json:"movie_title"`
 	TrackerCount int    `json:"tracker_count"`
 }
 
 type Tracker struct {
-	ID    []byte `json:"tracker_id"`
-	Text  string `json:"tracker_text"`
-	Count int    `json:"tracker_count"`
+	ID    uuid.UUID `json:"tracker_id"`
+	Text  string    `json:"tracker_text"`
+	Count int       `json:"tracker_count"`
 	// rank is just the popularity ordering from the sql view for
 	// simpler sorting on the front end
 	Rank      int    `json:"tracker_rank"`

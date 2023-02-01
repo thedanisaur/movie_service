@@ -22,6 +22,7 @@ func main() {
 
 	// Non Authenticated routes
 	app.Get("/movies", handlers.GetMovies)
+	app.Get("/movie_trackers/:tracker_id", handlers.GetMovieTrackersByID)
 	app.Get("/movie_trackers/:movie_name/:username", handlers.GetMovieTrackers)
 	app.Get("/ratings", handlers.GetRatings)
 	app.Get("/series", handlers.GetSeries)

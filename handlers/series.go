@@ -39,7 +39,7 @@ func GetSeries(c *fiber.Ctx) error {
 			&series.Name,
 			&series.Title,
 			&series.CreatedOn,
-			&series.PersonId)
+			&series.PersonID)
 		if err != nil {
 			log.Printf("Failed to scan series_rows:\n%s\n", err.Error())
 			return c.Status(fiber.StatusServiceUnavailable).SendString(err_string)
