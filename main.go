@@ -18,7 +18,7 @@ func main() {
 
 	// Add CORS
 	app.Use(cors.New(cors.Config{
-		AllowOrigins: "*",
+		AllowOrigins: "127.0.0.1",
 		AllowHeaders: "Origin, Content-Type, Accept, Authorization",
 	}))
 
@@ -44,5 +44,5 @@ func main() {
 	app.Post("/trackers", handlers.PostTrackers)
 	app.Post("/vote", handlers.PostVote)
 
-	app.Listen(":1234")
+	log.Fatal(app.ListenTLS(":4321", "./certs/cert.crt", "./keys/key.key"))
 }

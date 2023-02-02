@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"movie_service/db"
+	"movie_service/security"
 	"movie_service/types"
 	"movie_service/util"
 	"sort"
@@ -14,6 +15,7 @@ import (
 )
 
 func GetTimeline(c *fiber.Ctx) error {
+	security.ValidateJWT(c)
 	txid := uuid.New()
 	log.Printf("%s | %s\n", util.GetFunctionName(GetTimeline), txid.String())
 	err_string := fmt.Sprintf("Database Error: %s\n", txid.String())
