@@ -61,5 +61,5 @@ func main() {
 	app.Post("/trackers", handlers.PostTrackers)
 	app.Post("/vote", handlers.PostVote)
 
-	log.Fatal(app.ListenTLS(":1234", "./certs/cert.crt", "./keys/key.key"))
+	log.Fatal(app.ListenTLS(":1234", "./secrets/cert.crt", "./secrets/key.key"))
 }

@@ -11,7 +11,7 @@ import (
 )
 
 func ValidateJWT(c *fiber.Ctx) error {
-	cert, err := tls.LoadX509KeyPair("./certs/cert.crt", "./keys/key.key")
+	cert, err := tls.LoadX509KeyPair("./secrets/cert.crt", "./secrets/key.key")
 	if err != nil {
 		log.Printf("Failed to load certificates: %s\n", err)
 		return errors.New("Request failed")
