@@ -52,7 +52,7 @@ func PostVote(c *fiber.Ctx) error {
 	val, err := strconv.Atoi(vote_value.Value)
 	if err != nil {
 		log.Printf("Value Error:\n%s\n", err.Error())
-		err_string := fmt.Sprintf("Value Error: %s\n", txid.String())
+		err_string := fmt.Sprintf("Vote value error: %s\n", txid.String())
 		return c.Status(fiber.StatusServiceUnavailable).SendString(err_string)
 	}
 	if val != 0 {
@@ -76,7 +76,7 @@ func PostVote(c *fiber.Ctx) error {
 	err_string := fmt.Sprintf("Database Error: %s\n", txid.String())
 	if err != nil {
 		log.Printf("Failed to insert record into votes:\n%s\n", err.Error())
-		return c.Status(fiber.StatusServiceUnavailable).SendString(err_string)
+		return c.Status(fiber.StatusServiceUnavailable).SendString(err.Error())
 	}
 	id, err := result.LastInsertId()
 	if err != nil {

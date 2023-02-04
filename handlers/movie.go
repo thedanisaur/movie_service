@@ -144,7 +144,7 @@ func PostMovie(c *fiber.Ctx) error {
 	result, err := database.Exec(query, values...)
 	if err != nil {
 		log.Printf("Failed to insert record into movies:\n%s\n", err.Error())
-		return c.Status(fiber.StatusServiceUnavailable).SendString(err_string)
+		return c.Status(fiber.StatusServiceUnavailable).SendString(err.Error())
 	}
 	id, err := result.LastInsertId()
 	if err != nil {

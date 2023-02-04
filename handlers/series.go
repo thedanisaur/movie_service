@@ -69,6 +69,7 @@ func PostSeries(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).SendString(fmt.Sprintf("Bad Request: %s\n", txid.String()))
 	}
 	series.Name = util.FormatName(series.Title)
+	username := c.Get("Username")
 	database := db.GetInstance()
 	query := `
 		INSERT INTO series
@@ -85,17 +86,14 @@ func PostSeries(c *fiber.Ctx) error {
 		FROM people
 		WHERE person_username = ?;
 	`
-	result, err := database.Exec(query, series.Title, series.Name, series.ChosenBy)
+	result, err := database.Exec(query, series.Title, series.Name, username)
 	err_string := fmt.Sprintf("Database Error: %s\n", txid.String())
 	if err != nil {
 		log.Printf("Failed to insert record into series:\n%s\n", err.Error())
-		return c.Status(fiber.StatusServiceUnavailable).SendString(err_string)
+		return c.Status(fiber.StatusServiceUnavailable).SendString(err.Error())
 	}
 	id, err := result.LastInsertId()
-	// TODO || id == 0 is there because no error was being thrown
-	// for not including a username, suspicious
-	// This fix probably only works because of the auto increment
-	if err != nil || id == 0 {
+	if err != nil {
 		log.Printf("Failed retrieve inserted id\n%s\n", err.Error())
 		return c.Status(fiber.StatusServiceUnavailable).SendString(err_string)
 	}
