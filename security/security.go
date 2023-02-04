@@ -1,6 +1,7 @@
 package security
 
 import (
+	"crypto/tls"
 	"errors"
 	"log"
 	"strconv"
@@ -10,14 +11,27 @@ import (
 )
 
 func ValidateJWT(c *fiber.Ctx) error {
+	cert, err := tls.LoadX509KeyPair("./certs/cert.crt", "./keys/key.key")
+	if err != nil {
+		log.Printf("Failed to load certificates: %s\n", err)
+		return errors.New("Request failed")
+	}
+	tlsConfig := &tls.Config{
+		ServerName:   "www.moviesunday.com",
+		Certificates: []tls.Certificate{cert},
+		// TODO don't skip...
+		InsecureSkipVerify: true,
+	}
 	req := fasthttp.AcquireRequest()
-	defer fasthttp.ReleaseRequest(req)
-	req.SetRequestURI("http://localhost:4321/validate")
+	req.SetRequestURI("https://localhost:4321/validate")
 	req.Header.Add("Authorization", c.Get(fiber.HeaderAuthorization))
 	req.Header.Add("Username", c.Get("Username"))
+	req.Header.SetMethodBytes([]byte("GET"))
 	resp := fasthttp.AcquireResponse()
-	defer fasthttp.ReleaseResponse(resp)
-	err := fasthttp.Do(req, resp)
+	client := &fasthttp.Client{
+		TLSConfig: tlsConfig,
+	}
+	err = client.Do(req, resp)
 	if err != nil {
 		log.Printf("Request failed: %s\n", err)
 		return errors.New("Request failed")

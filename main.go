@@ -18,7 +18,7 @@ func main() {
 
 	// Add CORS
 	app.Use(cors.New(cors.Config{
-		AllowOrigins: "https://127.0.0.1:8080, https://localhost:8080, https://127.0.0.1:4321, https://127.0.0.1:1234",
+		AllowOrigins: "https://127.0.0.1:8080, https://localhost:8080, https://127.0.0.1:4321, https://localhost:4321",
 		AllowHeaders: `Accept
 			, Accept-Encoding
 			, Accept-Language
@@ -34,7 +34,8 @@ func main() {
 			, User-Agent
 			, Content-Type
 			, Content-Length
-			, Authorization`,
+			, Authorization
+			, Username`,
 		AllowCredentials: true,
 	}))
 
