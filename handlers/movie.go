@@ -36,9 +36,9 @@ func GetMovies(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusServiceUnavailable).SendString(err_string)
 	}
 
-	var movies []types.Movie2
+	var movies []types.Movie
 	for movie_votes_rows.Next() {
-		var movie types.Movie2
+		var movie types.Movie
 		err = movie_votes_rows.Scan(&movie.SeriesName,
 			&movie.SeriesTitle,
 			&movie.MovieName,
@@ -136,7 +136,7 @@ func PostMovie(c *fiber.Ctx) error {
 	values := []interface{}{}
 	for _, movie := range movies {
 		query += `(?, ?, ?, CURDATE()), `
-		values = append(values, util.FormatName(movie.Title), series_name, movie.Title)
+		values = append(values, util.FormatName(movie.MovieTitle), series_name, movie.MovieTitle)
 	}
 	query = query[0 : len(query)-2]
 	err_string := fmt.Sprintf("Database Error: %s\n", txid.String())
