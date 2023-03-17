@@ -15,6 +15,7 @@ type Config struct {
 			CertificatePath string `json:"cert_path"`
 			KeyPath         string `json:"key_path"`
 			Port            int    `json:"port"`
+			UseTLS          bool   `json:"use_tls"`
 		}
 		Cors struct {
 			AllowCredentials bool     `json:"allow_credentials"`
@@ -22,9 +23,9 @@ type Config struct {
 			AllowOrigins     []string `json:"allow_origins"`
 		}
 		Limiter struct {
-			Max                      int  `json:"max_requests"`
 			Expiration               int  `json:"expiration"`
 			LimiterSlidingMiddleware bool `json:"limiter_sliding_middleware"`
+			Max                      int  `json:"max_requests"`
 			SkipSuccessfulRequests   bool `json:"skip_successful_requests"`
 		}
 	}

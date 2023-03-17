@@ -16,7 +16,11 @@ func GetRatings(c *fiber.Ctx) error {
 	txid := uuid.New()
 	log.Printf("%s | %s\n", util.GetFunctionName(GetRatings), txid.String())
 	err_string := fmt.Sprintf("Database Error: %s\n", txid.String())
-	database := db.GetInstance()
+	database, err := db.GetInstance()
+	if err != nil {
+		log.Printf("Failed to connect to DB\n%s\n", err.Error())
+		return c.Status(fiber.StatusInternalServerError).SendString(err_string)
+	}
 	ratings_query := `
 		SELECT series_title
 			, chosen_by

@@ -16,7 +16,12 @@ import (
 func GetSeries(c *fiber.Ctx) error {
 	txid := uuid.New()
 	log.Printf("%s | %s\n", util.GetFunctionName(GetSeries), txid.String())
-	database := db.GetInstance()
+	database, err := db.GetInstance()
+	if err != nil {
+		log.Printf("Failed to connect to DB\n%s\n", err.Error())
+		err_string := fmt.Sprintf("Database Error: %s\n", txid.String())
+		return c.Status(fiber.StatusInternalServerError).SendString(err_string)
+	}
 	query := `
 		SELECT series_order
 			, series_name
@@ -70,7 +75,12 @@ func PostSeries(c *fiber.Ctx) error {
 	}
 	series.Name = util.FormatName(series.Title)
 	username := c.Get("Username")
-	database := db.GetInstance()
+	database, err := db.GetInstance()
+	if err != nil {
+		log.Printf("Failed to connect to DB\n%s\n", err.Error())
+		err_string := fmt.Sprintf("Database Error: %s\n", txid.String())
+		return c.Status(fiber.StatusInternalServerError).SendString(err_string)
+	}
 	query := `
 		INSERT INTO series
 		(

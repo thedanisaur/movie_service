@@ -20,7 +20,12 @@ func GetMovieTrackers(c *fiber.Ctx) error {
 	err_string := fmt.Sprintf("Database Error: %s\n", txid.String())
 	movie_name := c.Params("movie_name")
 	username := c.Params("username")
-	database := db.GetInstance()
+	database, err := db.GetInstance()
+	if err != nil {
+		log.Printf("Failed to connect to DB\n%s\n", err.Error())
+		err_string := fmt.Sprintf("Database Error: %s\n", txid.String())
+		return c.Status(fiber.StatusInternalServerError).SendString(err_string)
+	}
 	movie_trackers_query := `
 		SELECT movie_name
 			, BIN_TO_UUID(tracker_id) AS tracker_id
@@ -69,7 +74,12 @@ func GetMovieTrackersByID(c *fiber.Ctx) error {
         ORDER BY mt_vw.tracker_count DESC
 	`
 	err_string := fmt.Sprintf("Database Error: %s\n", txid.String())
-	database := db.GetInstance()
+	database, err := db.GetInstance()
+	if err != nil {
+		log.Printf("Failed to connect to DB\n%s\n", err.Error())
+		err_string := fmt.Sprintf("Database Error: %s\n", txid.String())
+		return c.Status(fiber.StatusInternalServerError).SendString(err_string)
+	}
 	tracker_movies_rows, err := database.Query(tracker_movies_query, tracker_id)
 	if err != nil {
 		log.Printf("Failed to query for tracker's movies:\n%s\n", err.Error())
@@ -114,7 +124,12 @@ func PostMovieTrackers(c *fiber.Ctx) error {
 			WHERE tracker_id = UUID_TO_BIN(?)
 			AND movie_name = ?
 		`
-		database := db.GetInstance()
+		database, err := db.GetInstance()
+		if err != nil {
+			log.Printf("Failed to connect to DB\n%s\n", err.Error())
+			err_string := fmt.Sprintf("Database Error: %s\n", txid.String())
+			return c.Status(fiber.StatusInternalServerError).SendString(err_string)
+		}
 		row := database.QueryRow(query, movie_tracker.TrackerID, movie_tracker.MovieName)
 		var val int
 		err = row.Scan(&val)

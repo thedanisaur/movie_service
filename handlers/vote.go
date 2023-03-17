@@ -31,7 +31,12 @@ func PostVote(c *fiber.Ctx) error {
 		log.Printf("Missing vote data\n%s\n", vote_data)
 		return c.Status(fiber.StatusBadRequest).SendString(fmt.Sprintf("Bad Request: %s\n", txid.String()))
 	}
-	database := db.GetInstance()
+	database, err := db.GetInstance()
+	if err != nil {
+		log.Printf("Failed to connect to DB\n%s\n", err.Error())
+		err_string := fmt.Sprintf("Database Error: %s\n", txid.String())
+		return c.Status(fiber.StatusInternalServerError).SendString(err_string)
+	}
 	var vote_value types.Vote
 	vote_query := `
 		SELECT COUNT(vote_value)

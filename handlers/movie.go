@@ -18,7 +18,11 @@ func GetMovies(c *fiber.Ctx) error {
 	txid := uuid.New()
 	log.Printf("%s | %s\n", util.GetFunctionName(GetMovies), txid.String())
 	err_string := fmt.Sprintf("Database Error: %s\n", txid.String())
-	database := db.GetInstance()
+	database, err := db.GetInstance()
+	if err != nil {
+		log.Printf("Failed to connect to DB\n%s\n", err.Error())
+		return c.Status(fiber.StatusInternalServerError).SendString(err_string)
+	}
 	// Get all the movies
 	movies_votes_query := `
 		SELECT series_name
@@ -140,7 +144,11 @@ func PostMovie(c *fiber.Ctx) error {
 	}
 	query = query[0 : len(query)-2]
 	err_string := fmt.Sprintf("Database Error: %s\n", txid.String())
-	database := db.GetInstance()
+	database, err := db.GetInstance()
+	if err != nil {
+		log.Printf("Failed to connect to DB\n%s\n", err.Error())
+		return c.Status(fiber.StatusInternalServerError).SendString(err_string)
+	}
 	result, err := database.Exec(query, values...)
 	if err != nil {
 		log.Printf("Failed to insert record into movies:\n%s\n", err.Error())

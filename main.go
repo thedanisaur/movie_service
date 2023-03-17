@@ -16,23 +16,32 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/limiter"
 )
 
-func loadConfig(config_path string) types.Config {
+func loadConfig(config_path string) (types.Config, error) {
 	var config types.Config
 	config_file, err := os.Open(config_path)
-	defer config_file.Close()
 	if err != nil {
-		fmt.Println(err.Error())
+		return config, err
 	}
+	defer config_file.Close()
 	jsonParser := json.NewDecoder(config_file)
 	jsonParser.Decode(&config)
-	return config
+	return config, nil
 }
 
 func main() {
 	log.Println("Starting Movie Service...")
-	config := loadConfig("./config.json")
+	config, err := loadConfig("./config.json")
+	if err != nil {
+		fmt.Printf("Error opening config, cannot continue: %s\n", err.Error())
+		return
+	}
 	app := fiber.New()
-	defer db.GetInstance().Close()
+	database, err := db.GetInstance()
+	if err != nil {
+		log.Printf(err.Error())
+	} else {
+		defer database.Close()
+	}
 
 	// Add CORS
 	app.Use(cors.New(cors.Config{
@@ -72,7 +81,12 @@ func main() {
 	app.Post("/vote", handlers.PostVote)
 
 	port := fmt.Sprintf(":%d", config.App.Host.Port)
-	err := app.ListenTLS(port, config.App.Host.CertificatePath, config.App.Host.KeyPath)
+	if config.App.Host.UseTLS {
+		err = app.ListenTLS(port, config.App.Host.CertificatePath, config.App.Host.KeyPath)
+	} else {
+		log.Println("Warning - not using TLS")
+		err = app.Listen(port)
+	}
 	if err != nil {
 		log.Fatal(err.Error())
 	}
