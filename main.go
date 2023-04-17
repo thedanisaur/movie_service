@@ -32,7 +32,7 @@ func main() {
 	log.Println("Starting Movie Service...")
 	config, err := loadConfig("./config.json")
 	if err != nil {
-		fmt.Printf("Error opening config, cannot continue: %s\n", err.Error())
+		log.Printf("Error opening config, cannot continue: %s\n", err.Error())
 		return
 	}
 	app := fiber.New()
