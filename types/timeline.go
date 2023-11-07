@@ -9,6 +9,7 @@ type Timeline struct {
 	SeriesBadVotes  string          `json:"series_bad_votes"`
 	SeriesChosenBy  string          `json:"series_chosen_by"`
 	SeriesCreatedOn string          `json:"series_created_on"`
+	SeriesImage     string          `json:"series_image"`
 	SeriesMovies    []TimelineMovie `json:"series_movies"`
 }
 

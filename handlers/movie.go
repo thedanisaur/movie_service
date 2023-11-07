@@ -30,6 +30,7 @@ func GetMovies(c *fiber.Ctx) error {
 			, movie_name
 			, movie_title
 			, movie_created_on
+			, movie_image
 			, dan_vote
 			, nick_vote
 		FROM dn_movies_votes_vw
@@ -48,6 +49,7 @@ func GetMovies(c *fiber.Ctx) error {
 			&movie.MovieName,
 			&movie.MovieTitle,
 			&movie.MovieCreatedOn,
+			&movie.MovieImage,
 			&movie.DanVote,
 			&movie.NickVote)
 		if err != nil {
@@ -110,8 +112,8 @@ func GetMovies(c *fiber.Ctx) error {
 				movies[i].Trackers = append(movies[i].Trackers, movie_tracker)
 				index = index + 1
 			}
-			// Only get the first 3 trackers
-			if index == 3 {
+			// Only get the first 5 trackers
+			if index == 5 {
 				break
 			}
 		}
