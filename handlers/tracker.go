@@ -26,10 +26,11 @@ func GetTrackers(c *fiber.Ctx) error {
 		SELECT tracker_id
 			, tracker_text
 			, tracker_count
+			, tracker_image
 			, tracker_created_on
 			, tracker_updated_on
 			, tracker_created_by
-		FROM trackers_vw
+		FROM trackers_main_vw
 	`
 	rows, err := database.Query(query)
 	if err != nil {
@@ -44,6 +45,7 @@ func GetTrackers(c *fiber.Ctx) error {
 		err = rows.Scan(&tracker.ID,
 			&tracker.Text,
 			&tracker.Count,
+			&tracker.Image,
 			&tracker.CreatedOn,
 			&tracker.UpdatedOn,
 			&tracker.CreatedBy)
