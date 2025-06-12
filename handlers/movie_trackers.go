@@ -67,7 +67,7 @@ func GetMovieTrackersByID(c *fiber.Ctx) error {
 	tracker_movies_query := `
         SELECT m.movie_title
             , mt_vw.tracker_count
-        FROM movie_trackers_vw mt_vw
+        FROM movies_trackers_vw mt_vw
             , movies m
         WHERE mt_vw.movie_name = m.movie_name
         AND mt_vw.tracker_id = ?
