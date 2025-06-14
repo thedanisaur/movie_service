@@ -1,6 +1,6 @@
 [Unit]
 Description=Movie Service
-ConditionPathExists=/home/ec2-user/code/movie_service
+ConditionPathExists=/opt/movie_service
 After=network.target
  
 [Service]
@@ -13,8 +13,8 @@ Restart=on-failure
 RestartSec=10
 startLimitIntervalSec=60
 
-WorkingDirectory=/home/ec2-user/code/movie_service
-ExecStart=/home/ec2-user/code/movie_service/main
+WorkingDirectory=/opt/movie_service
+ExecStart=/opt/movie_service/main
 
 # make sure log directory exists and owned by user
 PermissionsStartOnly=true
