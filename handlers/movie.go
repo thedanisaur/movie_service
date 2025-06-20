@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"movie_service/db"
-	"movie_service/security"
 	"movie_service/types"
 	"movie_service/util"
 
@@ -128,9 +127,6 @@ func GetMovies(c *fiber.Ctx) error {
 func PostMovie(c *fiber.Ctx) error {
 	txid := uuid.New()
 	log.Printf("%s | %s\n", util.GetFunctionName(PostMovie), txid.String())
-	if security.ValidateJWT(c) != nil {
-		return c.Status(fiber.StatusUnauthorized).SendString(fmt.Sprintf("Unauthorized: %s\n", txid.String()))
-	}
 	series_name := c.Params("series")
 	var movies []types.Movie
 	err := json.Unmarshal(c.Body(), &movies)
