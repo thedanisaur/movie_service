@@ -29,4 +29,11 @@ type Config struct {
 			SkipSuccessfulRequests   bool `json:"skip_successful_requests"`
 		}
 	}
+	Service struct {
+		User struct {
+			Host string `json:host`
+			Port int `json:port`
+			Validate string `json:validate`
+		}
+	}
 }

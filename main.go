@@ -4,17 +4,35 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"movie_service/db"
-	"movie_service/handlers"
-	"movie_service/types"
 	"os"
 	"strings"
 	"time"
+	"movie_service/db"
+	"movie_service/handlers"
+	"movie_service/security"
+	"movie_service/types"
+	"movie_service/util"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/limiter"
+	"github.com/google/uuid"
 )
+
+func AuthorizationMiddleware(config types.Config) fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		txid := uuid.New()
+		log.Printf("%s | %s\n", util.GetFunctionName(AuthorizationMiddleware), txid.String())
+
+		err := security.ValidateJWT(config)(c)
+		if err != nil {
+			log.Printf("Failed to Validate JWT\n%s\n", err)
+			err_string := fmt.Sprintf("Unauthorized: %s\n", txid.String())
+			return c.Status(fiber.StatusInternalServerError).SendString(err_string)
+		}
+		return c.Next()
+	}
+}
 
 func loadConfig(config_path string) (types.Config, error) {
 	var config types.Config
@@ -74,11 +92,11 @@ func main() {
 	app.Get("/trackers", handlers.GetTrackers)
 
 	// JWT Authentication routes
-	app.Post("/movies/:series", handlers.PostMovie)
-	app.Post("/movie_trackers/:username", handlers.PostMovieTrackers)
-	app.Post("/series", handlers.PostSeries)
-	app.Post("/trackers", handlers.PostTrackers)
-	app.Post("/vote", handlers.PostVote)
+	app.Post("/movies/:series", AuthorizationMiddleware(config), handlers.PostMovie)
+	app.Post("/movie_trackers/:username", AuthorizationMiddleware(config), handlers.PostMovieTrackers)
+	app.Post("/series", AuthorizationMiddleware(config), handlers.PostSeries)
+	app.Post("/trackers", AuthorizationMiddleware(config), handlers.PostTrackers)
+	app.Post("/vote", AuthorizationMiddleware(config), handlers.PostVote)
 
 	port := fmt.Sprintf(":%d", config.App.Host.Port)
 	if config.App.Host.UseTLS {
