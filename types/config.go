@@ -31,9 +31,9 @@ type Config struct {
 	}
 	Service struct {
 		User struct {
-			Host string `json:host`
-			Port int `json:port`
-			Validate string `json:validate`
+			Host     string `json:"host"`
+			Port     int    `json:"port"`
+			Validate string `json:"validate"`
 		}
 	}
 }

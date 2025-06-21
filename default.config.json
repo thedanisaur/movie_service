@@ -43,5 +43,12 @@
             "limiter_sliding_middleware": false,
             "skip_successful_requests": false
         }
+    },
+    "service": {
+        "user": {
+            "host": "http://localhost",
+            "port": 4321,
+            "validate": "/validate"
+        }
     }
 }

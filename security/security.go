@@ -5,8 +5,8 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"strconv"
 	"movie_service/types"
+	"strconv"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/valyala/fasthttp"
@@ -27,7 +27,6 @@ func ValidateJWT(config types.Config) fiber.Handler {
 		}
 		req := fasthttp.AcquireRequest()
 		uri := fmt.Sprintf("%s:%s%s", config.Service.User.Host, strconv.Itoa(config.Service.User.Port), config.Service.User.Validate)
-		log.Printf(uri)
 		req.SetRequestURI(uri)
 		req.Header.Add("Authorization", c.Get(fiber.HeaderAuthorization))
 		req.Header.Add("Username", c.Get("Username"))
